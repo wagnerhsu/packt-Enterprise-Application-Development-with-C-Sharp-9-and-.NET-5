@@ -6,6 +6,7 @@
 namespace Packt.Ecommerce.Web.Controllers
 {
     using System.Threading.Tasks;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using Packt.Ecommerce.DTO.Models;
@@ -27,14 +28,21 @@ namespace Packt.Ecommerce.Web.Controllers
         private readonly IECommerceService eCommerceService;
 
         /// <summary>
+        /// Telemetry client.
+        /// </summary>
+        private readonly TelemetryClient telemetry;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="OrdersController"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
         /// <param name="eCommerceService">Service.</param>
-        public OrdersController(ILogger<OrdersController> logger, IECommerceService eCommerceService)
+        /// <param name="telemetry">Telemetry Client.</param>
+        public OrdersController(ILogger<OrdersController> logger, IECommerceService eCommerceService, TelemetryClient telemetry)
         {
             this.logger = logger;
             this.eCommerceService = eCommerceService;
+            this.telemetry = telemetry;
         }
 
         /// <summary>
@@ -46,13 +54,15 @@ namespace Packt.Ecommerce.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(OrderDetailsViewModel order)
         {
-            InvoiceDetailsViewModel invoice = new InvoiceDetailsViewModel();
+            this.telemetry.TrackEvent("Create Order");
             if (this.ModelState.IsValid)
             {
+                InvoiceDetailsViewModel invoice;
                 invoice = await this.eCommerceService.SubmitOrder(order).ConfigureAwait(false);
+                return this.RedirectToAction("Index", new { invoiceId = invoice.Id });
             }
 
-            return this.RedirectToAction("Index", new { invoiceId = invoice.Id });
+            return this.RedirectToAction("Index", "Cart", new { orderId = order.Id });
         }
 
         /// <summary>

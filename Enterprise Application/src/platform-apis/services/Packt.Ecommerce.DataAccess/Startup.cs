@@ -50,9 +50,9 @@ namespace Packt.Ecommerce.DataAccess
             services.Configure<DatabaseSettingsOptions>(this.Configuration.GetSection("CosmosDB"));
             string accountEndPoint = this.Configuration.GetValue<string>("CosmosDB:AccountEndPoint");
             string authKey = this.Configuration.GetValue<string>("CosmosDB:AuthKey");
-            CosmosClientOptions options = new CosmosClientOptions()
+            CosmosClientOptions options = new ()
             {
-                SerializerOptions = new CosmosSerializationOptions() { IgnoreNullValues = true },
+                SerializerOptions = new () { IgnoreNullValues = true },
             };
             services.AddSingleton(s => new CosmosClient(accountEndPoint, authKey, options));
             services.AddRepositories();
@@ -68,6 +68,9 @@ namespace Packt.Ecommerce.DataAccess
                 });
                 services.AddApplicationInsightsTelemetry(appinsightsInstrumentationKey);
             }
+
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen();
         }
 
         /// <summary>
@@ -77,6 +80,16 @@ namespace Packt.Ecommerce.DataAccess
         /// <param name="env">The env.</param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Data Access API V1");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

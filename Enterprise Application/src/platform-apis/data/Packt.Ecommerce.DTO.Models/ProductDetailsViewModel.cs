@@ -9,7 +9,6 @@ namespace Packt.Ecommerce.DTO.Models
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using Newtonsoft.Json;
 
     /// <summary>
     /// Product view model that will be bound to UI to show product details.
@@ -23,7 +22,7 @@ namespace Packt.Ecommerce.DTO.Models
         /// The identifier.
         /// </value>
         [Required]
-        public string Id { get; set; }
+        public string Id { get; init; }
 
         /// <summary>
         /// Gets or sets the name.

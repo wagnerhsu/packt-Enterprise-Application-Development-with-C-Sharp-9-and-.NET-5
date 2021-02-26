@@ -60,6 +60,15 @@ namespace Packt.Ecommerce.Product
                 .AddPolicyHandler(CircuitBreakerPolicy()); // Circuit breakerpolicy
             services.AddScoped<IProductService, ProductsService>();
 
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder.WithOrigins("*");
+                    });
+            });
+
             // Inject Automapper
             services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -90,6 +99,9 @@ namespace Packt.Ecommerce.Product
                 });
                 services.AddApplicationInsightsTelemetry(appinsightsInstrumentationKey);
             }
+
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen();
         }
 
         /// <summary>
@@ -99,6 +111,16 @@ namespace Packt.Ecommerce.Product
         /// <param name="env">The env.</param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Products API V1");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -109,6 +131,8 @@ namespace Packt.Ecommerce.Product
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
 
